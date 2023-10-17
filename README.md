@@ -99,10 +99,15 @@ See the [.gitpod.yml](https://www.gitpod.io/docs/references/gitpod-yml) referenc
 
 Now, we want to dockerize the application and run it as docker containers. We create a Dockerfile and put the following code.
 
-        FROM node:alpine3.16
+        FROM node:alpine3.16 As build
         WORKDIR /client
         COPY . .
-        RUN npm install 
-        EXPOSE 3000
-        CMD ["npm", "start"]
+        RUN npm install
+        RUN npm run build
+
+        FROM nginx:1.19.0 As prod
+        COPY --from=build /client/build /usr/share/nginx/html
+        EXPOSE 80
+        CMD ["nginx", "-g", "daemon off;"]
+
 In the Dockerfile above, we use a node:alpine3.16 as a base image, this gives us a small image size.
