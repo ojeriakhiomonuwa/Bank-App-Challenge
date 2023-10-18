@@ -99,7 +99,7 @@ jobs:
 
   
 workflows:
-  the_jobs:
+  lint_jobs:
     jobs:
       - lint-app
       - build-and-push-node1:
@@ -108,4 +108,9 @@ workflows:
          requires: [build-and-push-node1]
       - smoke-test-v1:
           requires: [lint-app]
-    
+  GitOpsflow:
+    jobs:
+      - build_and_push
+      - Update_manifest:
+          requires:
+            - build_and_push
