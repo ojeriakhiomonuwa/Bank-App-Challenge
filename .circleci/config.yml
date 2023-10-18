@@ -1,116 +1,51 @@
-
 version: 2.1
 
-orbs:
-  sam: circleci/aws-sam-serverless@3.1.0
-  
-
-commands:
-  destroy-cluster:
-    description: Destroy EKS Cluster.
-    steps:
-      - run:
-          name: Destroy environments
-          when: on_fail
-          command: |
-            eksctl delete cluster --name bank-app
-
-  install-kubectl-and-eksctl:
-    description: install kubectl and eksctl
-    steps:
-      - run:
-          name: Installing kubectl and eksctl
-          command: |
-                  yum install tar gzip -y
-                  curl --silent --location -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/amd64/kubectl
-                  chmod +x /usr/local/bin/kubectl
-                  mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
-                  kubectl version --client
-          
-                  curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-                  mv /tmp/eksctl /usr/local/bin
-                  eksctl version
 jobs:
-  lint-app:
+  build_and_push:
     docker:
-      - image: cimg/node:13.8.0
+      - image: cimg/node:20.3.1
     steps:
       - checkout
+      - setup_remote_docker
       - run:
-          name: Dockerfile lint
+          name: Build and push image
           command: |
-            npm install
-            npm run lint
-  
-  build-and-push-node1:
-    machine: true
-    steps:
-      - checkout
-      - run:
-          name: Build docker container for V1
-          command: |
-            echo
-            sudo curl -LO https://nodejs.org/dist/v18.0.0/node-v18.0.0-linux-x64.tar.xz 
-            sudo tar -xvf node-v18.0.0-linux-x64.tar.xz 
-            sudo cp -r node-v18.0.0-linux-x64/{bin,include,lib,share} /usr/ 
-            node --version => v18.0.0
-            sudo apt install nodejs
-            docker login -u savytech -p $DOCKERPASS
-            docker build -t  savytech/bank-app:v3 .            
-            docker push savytech/bank-app:v3
-  
-  create-eks-cluster-app:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - install-kubectl-and-eksctl
-      - run:
-          name: Creating K8S cluster
-          command: |
-                  echo
-                  eksctl create cluster \
-                  --name bank-app \
-                  --region us-east-1 \
-                  --with-oidc \
-                  --ssh-access \
-                  --ssh-public-key udacity
-                  kubectl get nodes -o wide
-                  kubectl create namespace node-namespace
-                  aws eks update-kubeconfig --name bank-app --region us-east-1
-      - run:
-          name: Deploying version_1
-          command: |
-              kubectl apply -f version1.yml
-      - destroy-cluster
+            version="build-$CIRCLE_BUILD_NUM"
+            echo $version
+            docker build -t savytech/bank-app:$version .
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+            docker push savytech/bank-app:$version
 
-  smoke-test-v1:
+  Update_manifest:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/base:2023.06
     steps:
       - checkout
-      - install-kubectl-and-eksctl
+      - setup_remote_docker
       - run:
-          name: Installing dependencies
+          name: Updating Manifest file 
           command: |
-              echo
-              yum install jq -y
-      - destroy-cluster
-
-  
+            TAG=$CIRCLE_BUILD_NUM
+            ((TAG--))
+            git clone https://github.com/lateef-taiwo/Bank-App-Kube-Manifest.git
+            git config --global user.email "taiwolateef55@gmail.com"
+            git config --global user.name "lateef-taiwo"
+            pwd
+            cd Bank-App-Kube-Manifest
+            pwd
+            echo $TAG
+            sed -i "s/build-.*/build-$TAG/g" manifest/deployment.yml
+            cat manifest/deployment.yml
+            git add .
+            git commit -m "new build with imgTag build-$TAG"
+            git config credential.helper 'cache --timeout=120'
+            git push -q https://$GITHUB_PERSONAL_TOKEN@github.com/lateef-taiwo/Bank-App-Kube-Manifest.git main 
 workflows:
-  lint_jobs:
-    jobs:
-      - lint-app
-      - build-and-push-node1:
-          requires: [lint-app]
-      - create-eks-cluster-app:
-         requires: [build-and-push-node1]
-      - smoke-test-v1:
-          requires: [lint-app]
   GitOpsflow:
     jobs:
       - build_and_push
       - Update_manifest:
           requires:
             - build_and_push
+      
+
