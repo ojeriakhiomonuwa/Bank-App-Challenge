@@ -1,1 +1,111 @@
 
+version: 2.1
+
+orbs:
+  sam: circleci/aws-sam-serverless@3.1.0
+  
+
+commands:
+  destroy-cluster:
+    description: Destroy EKS Cluster.
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            eksctl delete cluster --name bank-app
+
+  install-kubectl-and-eksctl:
+    description: install kubectl and eksctl
+    steps:
+      - run:
+          name: Installing kubectl and eksctl
+          command: |
+                  yum install tar gzip -y
+                  curl --silent --location -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/amd64/kubectl
+                  chmod +x /usr/local/bin/kubectl
+                  mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+                  kubectl version --client
+          
+                  curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+                  mv /tmp/eksctl /usr/local/bin
+                  eksctl version
+jobs:
+  lint-app:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Dockerfile lint
+          command: |
+            npm install
+            npm run lint
+  
+  build-and-push-node1:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build docker container for V1
+          command: |
+            echo
+            sudo curl -LO https://nodejs.org/dist/v18.0.0/node-v18.0.0-linux-x64.tar.xz 
+            sudo tar -xvf node-v18.0.0-linux-x64.tar.xz 
+            sudo cp -r node-v18.0.0-linux-x64/{bin,include,lib,share} /usr/ 
+            node --version => v18.0.0
+            sudo apt install nodejs
+            docker login -u savytech -p $DOCKERPASS
+            docker build -t  savytech/bank-app:v3 .            
+            docker push savytech/bank-app:v3
+  
+  create-eks-cluster-app:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - install-kubectl-and-eksctl
+      - run:
+          name: Creating K8S cluster
+          command: |
+                  echo
+                  eksctl create cluster \
+                  --name bank-app \
+                  --region us-east-1 \
+                  --with-oidc \
+                  --ssh-access \
+                  --ssh-public-key udacity
+                  kubectl get nodes -o wide
+                  kubectl create namespace node-namespace
+                  aws eks update-kubeconfig --name bank-app --region us-east-1
+      - run:
+          name: Deploying version_1
+          command: |
+              kubectl apply -f version1.yml
+      - destroy-cluster
+
+  smoke-test-v1:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - install-kubectl-and-eksctl
+      - run:
+          name: Installing dependencies
+          command: |
+              echo
+              yum install jq -y
+      - destroy-cluster
+
+  
+workflows:
+  the_jobs:
+    jobs:
+      - lint-app
+      - build-and-push-node1:
+          requires: [lint-app]
+      - create-eks-cluster-app:
+         requires: [build-and-push-node1]
+      - smoke-test-v1:
+          requires: [lint-app]
+    
