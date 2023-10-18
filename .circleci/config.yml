@@ -1,7 +1,7 @@
 version: 2.1
 
-orbs:
-  node: circleci/node@5.1.0
+# orbs:
+#   node: circleci/node@5.1.0
 
 jobs:
   build_and_push:
@@ -15,7 +15,7 @@ jobs:
           command: |
             version="build-$CIRCLE_BUILD_NUM"
             echo $version
-            docker build -interactive -t savytech/bank-app:$version .
+            docker build --interactive -t savytech/bank-app:$version .
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
             docker push savytech/bank-app:$version
 
