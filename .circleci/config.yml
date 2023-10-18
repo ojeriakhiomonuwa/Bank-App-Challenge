@@ -2,7 +2,7 @@
 version: 2.1
 
 orbs:
-  sam: cimg/aws-sam-serverless@3.1.0
+  sam: circleci/aws-sam-serverless@3.1.0
   
 
 commands:
