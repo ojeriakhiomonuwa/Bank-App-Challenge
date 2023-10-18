@@ -2,7 +2,7 @@
 version: 2.1
 
 orbs:
-  sam: circleci/aws-sam-serverless@3.1.0
+  sam: cimg/aws-sam-serverless@3.1.0
   
 
 commands:
@@ -33,7 +33,7 @@ commands:
 jobs:
   lint-app:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - run:
