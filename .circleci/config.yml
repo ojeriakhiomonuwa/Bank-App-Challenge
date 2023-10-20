@@ -38,7 +38,7 @@ jobs:
             cd Bank-App-Kube-Manifest
             pwd
             echo $TAG
-            sed -i "s/build-.*/build-$TAG/g" manifest/deployment.yml
+            sed -i "s/build-[0-9]\+/build-$TAG/g" manifest/deployment.yml
             cat manifest/deployment.yml
             git add .
             git commit -m "new build with imgTag build-$TAG"
