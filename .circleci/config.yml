@@ -52,3 +52,4 @@ workflows:
           requires:
             - build_and_push
 
+#Add more workflows
