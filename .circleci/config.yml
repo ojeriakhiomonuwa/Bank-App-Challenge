@@ -1,6 +1,6 @@
 version: 2.1
 
-#You can use orbs here if you wish to
+#You can use orbs here if you wish
 # orbs:
 #   node: circleci/node@5.1.0
 
@@ -51,6 +51,4 @@ workflows:
       - Update_manifest:
           requires:
             - build_and_push
-
-      
 
