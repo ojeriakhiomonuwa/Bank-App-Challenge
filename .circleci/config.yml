@@ -30,7 +30,6 @@ jobs:
           name: Updating Manifest file 
           command: |
             TAG=$CIRCLE_BUILD_NUM
-            ((TAG--))
             git clone https://github.com/lateef-taiwo/Bank-App-Kube-Manifest.git
             git config --global user.email "taiwolateef55@gmail.com"
             git config --global user.name "lateef-taiwo"
