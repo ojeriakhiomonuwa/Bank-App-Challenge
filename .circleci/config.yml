@@ -14,11 +14,11 @@ jobs:
       - run:
           name: Build and push image
           command: |
-            #version="build-$CIRCLE_BUILD_NUM"
+            version="build $CIRCLE_BUILD_NUM"
             echo $version
             docker build -t savytech/bank-app:$version .
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-            docker push savytech/bank-app
+            docker push savytech/bank-app:$version
 
   Update_manifest:
     docker:
@@ -29,15 +29,15 @@ jobs:
       - run:
           name: Updating Manifest file 
           command: |
-            #TAG=$CIRCLE_BUILD_NUM
+            TAG=$CIRCLE_BUILD_NUM
             git clone https://github.com/lateef-taiwo/Bank-App-Kube-Manifest.git
             git config --global user.email "taiwolateef55@gmail.com"
             git config --global user.name "lateef-taiwo"
             pwd
             cd Bank-App-Kube-Manifest
             pwd
-            #echo $TAG
-            #sed -i "s/build-.*/build-$TAG/g" manifest/deployment.yml
+            echo $TAG
+            sed -i "s/build-.*/build-$TAG/g" manifest/deployment.yml
             cat manifest/deployment.yml
             git add .
             git commit -m "new build"
