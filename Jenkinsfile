@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker{
+            image 'node:18'
+        }
+    }
     
     environment {
         NODE_ENV = 'development'
@@ -14,14 +18,14 @@ pipeline {
 
             }
         }
-        stage('Install Node and NPM'){
-            steps{
-                // install node if its not present already
-                //sh 'sudo apt update -y'
-                sh 'sudo apt install nodejs npm -y'
+        // stage('Install Node and NPM'){
+        //     steps{
+        //         // install node if its not present already
+        //         //sh 'sudo apt update -y'
+        //         sh 'sudo apt install nodejs npm -y'
                 
-            }
-        }
+        //     }
+        // }
         stage('Install npm'){
             steps{
                 // Install Depencies
