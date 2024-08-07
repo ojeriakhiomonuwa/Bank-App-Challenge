@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout GitHub Repository'){
             steps{
                 // Checkout code from the GitHub Repository
-                git url: 'https://github.com/lateef-taiwo/Bank-App-Challenge.git'. branch: 'main'
+                git url: 'https://github.com/lateef-taiwo/Bank-App-Challenge.git', branch: 'main'
 
             }
         }
