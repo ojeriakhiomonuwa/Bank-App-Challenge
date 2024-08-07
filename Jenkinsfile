@@ -1,7 +1,7 @@
 pipeline {
     agent any
     
-    environmet {
+    environment {
         NODE_ENV = 'development'
         HOME = "$env.WORKSPACE"
     }
