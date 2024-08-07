@@ -17,7 +17,7 @@ pipeline {
         stage('Install Node and NPM'){
             steps{
                 // install node if its not present already
-                sh 'sudo apt update -y'
+                //sh 'sudo apt update -y'
                 sh 'sudo apt install nodejs npm -y'
                 
             }
