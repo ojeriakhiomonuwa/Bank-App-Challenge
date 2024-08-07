@@ -32,10 +32,17 @@ pipeline {
             sh 'npm install'
         }
         }
-        stage ('Run the Application in Development mode'){
+        // stage ('Run the Application in Development mode'){
+        //     steps{
+        //         // Start the Development serve
+        //         sh 'npm start'
+        //     }
+        // }
+
+        stage ('Run Build'){
             steps{
                 // Start the Development serve
-                sh 'npm start'
+                sh 'npm run build --verbose'
             }
         }
     }
