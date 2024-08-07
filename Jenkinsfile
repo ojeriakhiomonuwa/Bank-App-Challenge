@@ -39,4 +39,15 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Build and tests was Successful'
+        }
+        failure {
+            echo ' Build failed'
+        }
+    }
 }
