@@ -80,7 +80,7 @@ pipeline {
                     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-                    nvm install 14
+                    nvm install 18
                 '''
             }
         }
@@ -89,7 +89,7 @@ pipeline {
                 sh '''
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-                    nvm use 14
+                    nvm use 18
                     npm install
                 '''
             }
@@ -99,7 +99,7 @@ pipeline {
                 sh '''
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-                    nvm use 14
+                    nvm use 18
                     npm test
                 '''
             }
@@ -109,7 +109,7 @@ pipeline {
                 sh '''
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-                    nvm use 14
+                    nvm use 18
                     npm run build --verbose
                 '''
             }
@@ -119,7 +119,7 @@ pipeline {
                 sh '''
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
-                    nvm use 14
+                    nvm use 18
                     npm start
                 '''
             }
