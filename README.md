@@ -105,6 +105,9 @@ Now, we want to dockerize the application and run it as docker containers. We cr
         RUN npm install
         RUN npm run build
 
+
+        
+
         FROM nginx:1.19.0 As prod
         COPY --from=build /client/build /usr/share/nginx/html
         EXPOSE 80
